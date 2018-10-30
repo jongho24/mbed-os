@@ -51,11 +51,8 @@ extern "C"{
 
 void DUALTIMER0_Handler(void)
 {
-   if(DUALTIMER_GetIntStatus(DUALTIMER0_0))
-    {
-        DUALTIMER_IntClear(DUALTIMER0_0);
-        us_ticker_irq_handler();
-    }
+    DUALTIMER_IntClear(DUALTIMER0_0);
+    us_ticker_irq_handler();
 }
 
 #ifdef __cplusplus
@@ -96,12 +93,6 @@ void us_ticker_set_interrupt(timestamp_t timestamp)
     dev = (int32_t)(timestamp - us_ticker_read());
     dev = dev * ((GetSystemClock() / 1000000) / 16);     
 
-    if(dev <= 0)
-    {
-        us_ticker_irq_handler();
-        return;
-    }
-    
     DUALTIMER_ClockEnable(TIMER_0);
     DUALTIMER_Stop(TIMER_0);
     
@@ -123,6 +114,11 @@ void us_ticker_set_interrupt(timestamp_t timestamp)
 
 }
 
+void us_ticker_fire_interrupt(void)
+{
+    NVIC_SetPendingIRQ(TIMER_IRQn);
+}
+
 void us_ticker_disable_interrupt(void)
 {
     NVIC_DisableIRQ(TIMER_IRQn);
@@ -133,4 +129,9 @@ void us_ticker_disable_interrupt(void)
 void us_ticker_clear_interrupt(void)
 {
     DUALTIMER_IntClear(TIMER_0);
+}
+
+void us_ticker_free(void)
+{
+
 }

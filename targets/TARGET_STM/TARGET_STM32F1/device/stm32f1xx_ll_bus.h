@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f1xx_ll_bus.h
   * @author  MCD Application Team
-  * @version $VERSION$
-  * @date    $DATE$
   * @brief   Header file of BUS LL module.
 
   @verbatim                

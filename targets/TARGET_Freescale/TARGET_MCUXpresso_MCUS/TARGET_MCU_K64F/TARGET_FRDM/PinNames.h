@@ -204,6 +204,9 @@ typedef enum {
     //Push buttons
     SW2 = PTC6,
     SW3 = PTA4,
+    // Standardized button names
+    BUTTON1 = SW2,
+    BUTTON2 = SW3,
 
     // USB Pins
     USBTX = PTB17,
@@ -238,6 +241,12 @@ typedef enum {
     A5 = PTC10,
 
     DAC0_OUT = 0xFEFE, /* DAC does not have Pin Name in RM */
+
+    //SPI Pins configuration
+    SPI_MOSI    = PTE3,
+    SPI_MISO    = PTE1,
+    SPI_SCK     = PTE2,
+    SPI_CS      = PTE4,
 
     // Not connected
     NC = (int)0xFFFFFFFF

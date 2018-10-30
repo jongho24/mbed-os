@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f1xx_ll_utils.h
   * @author  MCD Application Team
-  * @version $VERSION$
-  * @date    $DATE$
   * @brief   Header file of UTILS LL module.
   @verbatim
   ==============================================================================

@@ -118,6 +118,9 @@ typedef enum {
     //Push buttons
     SW2 = PTA4,
     SW3 = PTD0,
+    // Standardized button names
+    BUTTON1 = SW2,
+    BUTTON2 = SW3,
 
     // USB Pins
     USBTX = PTB17,
@@ -152,6 +155,14 @@ typedef enum {
     A3 = PTD6,
     A4 = PTB1,
     A5 = PTB0,
+
+    /**** QSPI FLASH pins ****/
+    QSPI_FLASH1_IO0 = PTE2,
+    QSPI_FLASH1_IO1 = PTE4,
+    QSPI_FLASH1_IO2 = PTE3,
+    QSPI_FLASH1_IO3 = PTE0,
+    QSPI_FLASH1_SCK = PTE1,
+    QSPI_FLASH1_CSN = PTE5,
 
     // Not connected
     NC = (int)0xFFFFFFFF

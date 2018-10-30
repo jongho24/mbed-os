@@ -111,14 +111,43 @@ struct i2c_s {
 #endif
 };
 
+struct analogin_s {
+    ADC_HandleTypeDef handle;
+    PinName pin;
+    uint8_t channel;
+};
+
 #include "gpio_object.h"
+
+#if DEVICE_ANALOGOUT
+struct dac_s {
+    DACName dac;
+    PinName pin;
+    uint32_t channel;
+    DAC_HandleTypeDef handle;
+};
+#endif
+
+#if DEVICE_CAN
+struct can_s {
+    CAN_HandleTypeDef CanHandle;
+    int index;
+    int hz;
+};
+#endif
+
+#if DEVICE_FLASH
+struct flash_s {
+    /*  nothing to be stored for now */
+    uint32_t dummy;
+};
+#endif
 
 #ifdef __cplusplus
 }
 #endif
 
 /* STM32F0 HAL doesn't provide this API called in rtc_api.c */
-#define __HAL_RCC_RTC_CLKPRESCALER(__RTCCLKSource__)
 #define RTC_WKUP_IRQn RTC_IRQn
 
 #endif

@@ -63,7 +63,7 @@ def benchmarks():
     csv_data.writerow(['Toolchain', "Target", "Benchmark", "code", "data", "bss", "flash"])
 
     # Build
-    for toolchain in ['ARM', 'uARM', 'GCC_CR', 'GCC_ARM']:
+    for toolchain in ['ARM', 'uARM', 'GCC_ARM']:
         for mcu in ["LPC1768", "LPC11U24"]:
             # Build Libraries
             build_mbed_libs(mcu, toolchain)
@@ -101,7 +101,7 @@ def compare(t1, t2, target):
                     benchmarks_data[name][t] = map(int, (code, data, bss, flash))
 
     print "%s vs %s for %s" % (t1, t2, target)
-    for name, data in benchmarks_data.iteritems():
+    for name, data in benchmarks_data.items():
         try:
             # Check Size
             code_a, data_a, bss_a, flash_a = data[t1]
@@ -118,4 +118,4 @@ def compare(t1, t2, target):
 
 
 if __name__ == '__main__':
-    compare("GCC_CR", "LPC1768")
+    compare("ARM", "GCC_ARM", "LPC1768")

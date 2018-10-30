@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f1xx_ll_crc.h
   * @author  MCD Application Team
-  * @version $VERSION$
-  * @date    $DATE$
   * @brief   Header file of CRC LL module.
   ******************************************************************************
   * @attention

@@ -1,6 +1,11 @@
 
 /** \addtogroup platform */
 /** @{*/
+/**
+ * \defgroup platform_interface Network interface and other utility functions
+ * @{
+ */
+
 /* mbed Microcontroller Library
  * Copyright (c) 2006-2013 ARM Limited
  *
@@ -21,6 +26,7 @@
 
 #include <stdarg.h>
 
+#include "mbed_toolchain.h"
 #include "device.h"
 
 /* Mbed interface mac address
@@ -41,6 +47,11 @@ extern "C" {
 #endif
 
 #if DEVICE_SEMIHOST
+
+/**
+ * \defgroup platform_interface interface functions
+ * @{
+ */
 
 /** Functions to control the mbed interface
  *
@@ -110,21 +121,57 @@ void mbed_mac_address(char *mac);
 
 /** Cause the mbed to flash the BLOD (Blue LEDs Of Death) sequence
  */
-void mbed_die(void);
+MBED_NORETURN void mbed_die(void);
 
 /** Print out an error message.  This is typically called when
- * hanlding a crash.
+ * handling a crash.
  *
- * @Note Synchronization level: Interrupt safe
+ * @note Synchronization level: Interrupt safe
+ * @note This uses an internal 128-byte buffer to format the string,
+ *       so the output may be truncated. If you need to write a potentially
+ *       long string, use mbed_error_puts.
+ *
+ * @param format    C string that contains data stream to be printed.
+ *                  Code snippets below show valid format.
+ *
+ * @code
+ * mbed_error_printf("Failed: %s, file: %s, line %d \n", expr, file, line);
+ * @endcode
+ *
  */
-void mbed_error_printf(const char* format, ...);
+void mbed_error_printf(const char *format, ...);
 
 /** Print out an error message.  Similar to mbed_error_printf
  * but uses a va_list.
  *
- * @Note Synchronization level: Interrupt safe
+ * @note Synchronization level: Interrupt safe
+ *
+ * @param format    C string that contains data stream to be printed.
+ * @param arg       Variable arguments list
+ *
  */
-void mbed_error_vfprintf(const char * format, va_list arg);
+void mbed_error_vprintf(const char *format, va_list arg);
+
+/** Print out an error message. This is typically called when
+ * handling a crash.
+ *
+ * Unlike mbed_error_printf, there is no limit to the maximum output
+ * length. Unlike standard puts, but like standard fputs, this does not
+ * append a '\n' character.
+ *
+ * @note Synchronization level: Interrupt safe
+ *
+ * @param str    C string that contains data stream to be printed.
+ *
+ */
+void mbed_error_puts(const char *str);
+
+/** @deprecated   Renamed to mbed_error_vprintf to match functionality */
+MBED_DEPRECATED_SINCE("mbed-os-5.11",
+                          "Renamed to mbed_error_vprintf to match functionality.")
+void mbed_error_vfprintf(const char *format, va_list arg);
+/** @}*/
+
 
 #ifdef __cplusplus
 }

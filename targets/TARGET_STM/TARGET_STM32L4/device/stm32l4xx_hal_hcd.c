@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32l4xx_hal_hcd.c
   * @author  MCD Application Team
-  * @version V1.5.1
-  * @date    31-May-2016
   * @brief   HCD HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the USB Peripheral Controller:
@@ -42,7 +40,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -72,7 +70,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l4xx_hal.h"
 
-#if defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L485xx) || defined(STM32L486xx)
+#if defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L485xx) || defined(STM32L486xx) || \
+    defined(STM32L496xx) || defined(STM32L4A6xx) || \
+    defined(STM32L4R5xx) || defined(STM32L4R7xx) || defined(STM32L4R9xx) || defined(STM32L4S5xx) || defined(STM32L4S7xx) || defined(STM32L4S9xx)
 
 /** @addtogroup STM32L4xx_HAL_Driver
   * @{
@@ -206,7 +206,9 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
   hhcd->hc[ch_num].ep_num = epnum & 0x7F;
   hhcd->hc[ch_num].ep_is_in = ((epnum & 0x80) == 0x80);
   hhcd->hc[ch_num].speed = speed;
-  /*  reset to 0 */
+  
+  // Added for MBED PR #3432
+  /* reset to 0 */
   hhcd->hc[ch_num].toggle_out = 0;
   hhcd->hc[ch_num].toggle_in = 0;
 
@@ -346,6 +348,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
                                             uint16_t length,
                                             uint8_t do_ping) 
 {
+  // Added for MBED PR #3432
   if ((hhcd->hc[ch_num].ep_is_in != direction)) {
     if ((hhcd->hc[ch_num].ep_type == EP_TYPE_CTRL)){
       /*  reconfigure the endpoint !!! from tx -> rx, and rx ->tx  */
@@ -401,6 +404,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
         hhcd->hc[ch_num].do_ping = do_ping;
       }
     }
+    // Added for MBED PR #3432
     else if ((token == 1) && (direction == 1))
     {
       if( hhcd->hc[ch_num].toggle_in == 0)
@@ -910,6 +914,7 @@ static void HCD_HC_IN_IRQHandler   (HCD_HandleTypeDef *hhcd, uint8_t chnum)
   }
   else if ((USBx_HC(chnum)->HCINT) &  USB_OTG_HCINT_CHH)
   {
+    // Added for MBED PR #3432
     int reactivate = 0;
     __HAL_HCD_MASK_HALT_HC_INT(chnum); 
     
@@ -939,11 +944,16 @@ static void HCD_HC_IN_IRQHandler   (HCD_HandleTypeDef *hhcd, uint8_t chnum)
       /* re-activate the channel  */
       tmpreg = USBx_HC(chnum)->HCCHAR;
       tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
-      tmpreg |= USB_OTG_HCCHAR_CHENA;
+      // Added for MBED PR #3432 #4231
+      if ( hhcd->hc[chnum].urb_state != URB_ERROR) {
+        tmpreg |= USB_OTG_HCCHAR_CHENA;
+        reactivate = 1;
+      }
       USBx_HC(chnum)->HCCHAR = tmpreg;
-      reactivate = 1;
     }
     __HAL_HCD_CLEAR_HC_INT(chnum, USB_OTG_HCINT_CHH);
+    // Added for MBED PR #3432 #4231
+    if (hhcd->hc[chnum].state == 0) reactivate = 1;
     if (reactivate == 0) HAL_HCD_HC_NotifyURBChange_Callback(hhcd, chnum, hhcd->hc[chnum].urb_state);
   }  
   
@@ -1274,6 +1284,8 @@ static void HCD_Port_IRQHandler  (HCD_HandleTypeDef *hhcd)
   * @}
   */
 
-#endif /* STM32L475xx || STM32L476xx || STM32L485xx || STM32L486xx */
+#endif /* STM32L475xx || STM32L476xx || STM32L485xx || STM32L486xx || */
+       /* STM32L496xx || STM32L4A6xx || */
+       /* STM32L4R5xx || STM32L4R7xx || STM32L4R9xx || STM32L4S5xx || STM32L4S7xx || STM32L4S9xx */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

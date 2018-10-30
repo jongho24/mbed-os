@@ -1,7 +1,8 @@
 import re
 
-from os.path import join, exists, realpath, relpath, basename
-from os import makedirs
+from os.path import join, exists
+from os import makedirs, remove
+import shutil
 
 from tools.export.makefile import Makefile, GccArm, Armc5, IAR
 
@@ -30,12 +31,20 @@ class Eclipse(Makefile):
 
 
         self.gen_file('cdt/pyocd_settings.tmpl', ctx,
-                      join('eclipse-extras',self.target+'_pyocd_settings.launch'))
+                      join('eclipse-extras',
+                           '{target}_pyocd_{project}_settings.launch'.format(target=self.target,
+                                                                             project=self.project_name)))
         self.gen_file('cdt/necessary_software.tmpl', ctx,
                       join('eclipse-extras','necessary_software.p2f'))
 
         self.gen_file('cdt/.cproject.tmpl', ctx, '.cproject')
         self.gen_file('cdt/.project.tmpl', ctx, '.project')
+
+    @staticmethod
+    def clean(project_name):
+        shutil.rmtree("eclipse-extras")
+        remove(".cproject")
+        remove(".project")
 
 
 class EclipseGcc(Eclipse, GccArm):

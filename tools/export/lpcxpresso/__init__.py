@@ -16,8 +16,9 @@ limitations under the License.
 """
 from os.path import splitext, basename
 
-from tools.export.exporters import Exporter
+from tools.export.exporters import Exporter, deprecated_exporter
 
+@deprecated_exporter
 class LPCXpresso(Exporter):
     NAME = 'LPCXpresso'
     TOOLCHAIN = 'GCC_ARM'
@@ -43,7 +44,7 @@ class LPCXpresso(Exporter):
 
     def generate(self):
         libraries = []
-        for lib in self.resources.libraries:
+        for lib in self.libraries:
             l, _ = splitext(basename(lib))
             libraries.append(l[3:])
 

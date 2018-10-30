@@ -33,6 +33,9 @@ public:
     * Constructor
     */
     USBEndpoint() {
+#ifdef USBHOST_OTHER
+        speed = false;
+#endif
         state = USB_TYPE_FREE;
         nextEp = NULL;
     };
@@ -86,7 +89,7 @@ public:
     template<typename T>
     inline void attach(T* tptr, void (T::*mptr)(void)) {
         if((mptr != NULL) && (tptr != NULL)) {
-            rx.attach(tptr, mptr);
+            rx = callback(tptr, mptr);
         }
     }
 
@@ -97,7 +100,7 @@ public:
      */
     inline void attach(void (*fptr)(void)) {
         if(fptr != NULL) {
-            rx.attach(fptr);
+            rx = fptr;
         }
     }
 
@@ -111,7 +114,11 @@ public:
 
 
     // setters
+#ifdef USBHOST_OTHER
+    void setState(USB_TYPE st);
+#else
     inline void setState(USB_TYPE st) { state = st; }
+#endif
     void setState(uint8_t st);
     void setDeviceAddress(uint8_t addr);
     inline void setLengthTransferred(int len) { transferred = len; };

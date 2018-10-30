@@ -37,6 +37,7 @@
 //*** ADC ***
 #ifdef DEVICE_ANALOGIN
 extern const PinMap PinMap_ADC[];
+extern const PinMap PinMap_ADC_Internal[];
 #endif
 
 //*** DAC ***
@@ -77,6 +78,12 @@ extern const PinMap PinMap_SPI_SSEL[];
 #ifdef DEVICE_CAN
 extern const PinMap PinMap_CAN_RD[];
 extern const PinMap PinMap_CAN_TD[];
+#endif
+
+#ifdef DEVICE_QSPI
+extern const PinMap PinMap_QSPI_DATA[];
+extern const PinMap PinMap_QSPI_SCLK[];
+extern const PinMap PinMap_QSPI_SSEL[];
 #endif
 
 #endif

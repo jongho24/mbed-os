@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015, Freescale Semiconductor, Inc.
- * All rights reserved.
+ * Copyright 2016-2017 NXP
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -12,7 +12,7 @@
  *   list of conditions and the following disclaimer in the documentation and/or
  *   other materials provided with the distribution.
  *
- * o Neither the name of Freescale Semiconductor, Inc. nor the names of its
+ * o Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from this
  *   software without specific prior written permission.
  *
@@ -136,9 +136,18 @@ extern "C" {
  * @param srcClock_Hz  The module clock frequency - system clock for MII management interface - SMI.
  * @retval kStatus_Success  PHY initialize success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
- * @retval kStatus_PHY_AutoNegotiateFail  PHY auto negotiate fail
  */
 status_t PHY_Init(ENET_Type *base, uint32_t phyAddr, uint32_t srcClock_Hz);
+
+/*!
+ * @brief Initiates auto negotiation.
+ *
+ * @param base       ENET peripheral base address.
+ * @param phyAddr    The PHY address.
+ * @retval kStatus_Success  PHY auto negotiation success
+ * @retval kStatus_PHY_AutoNegotiateFail  PHY auto negotiate fail
+ */
+status_t PHY_AutoNegotiation(ENET_Type *base, uint32_t phyAddr);
 
 /*!
  * @brief PHY Write function. This function write data over the SMI to

@@ -26,6 +26,7 @@
 #if DEVICE_SERIAL_ASYNCH
 #include "fsl_uart_edma.h"
 #endif
+#include "fsl_flash.h"
 #include "dma_api_hal.h"
 
 #ifdef __cplusplus
@@ -89,6 +90,16 @@ struct dac_s {
 struct trng_s {
     uint8_t dummy;
 };
+
+struct flash_s {
+    flash_config_t flash_config;
+};
+
+#if DEVICE_QSPI
+struct qspi_s {
+    uint32_t instance;
+};
+#endif
 
 #include "gpio_object.h"
 

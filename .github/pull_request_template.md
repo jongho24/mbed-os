@@ -1,39 +1,26 @@
-Notes:
-* Pull requests will not be accepted until the submitter has agreed to the [contributer agreement](https://github.com/ARMmbed/mbed-os/blob/master/CONTRIBUTING.md).
-* This is just a template, so feel free to use/remove the unnecessary things
+### Description
 
-## Description
-A few sentences describing the overall goals of the pull request's commits.
-
-
-## Status
-**READY/IN DEVELOPMENT/HOLD**
+<!-- 
+    Required
+    Add here detailed changes summary, testing results, dependencies 
+    Good example: https://os.mbed.com/docs/latest/reference/workflow.html (Pull request template)
+-->
 
 
-## Migrations
-If this PR changes any APIs or behaviors, give a short description of what *API users* should do when this PR is merged.
+### Pull request type
 
-YES | NO
+<!-- 
+    Required
+    Please add only one X to one of the following types. Do not fill multiple types (split the pull request otherwise).
+    Please note this is not a GitHub task list, indenting the boxes or changing the format to add a '.' or '*' in front
+    of them would change the meaning incorrectly. The only changes to be made are to add a description text under the
+    description heading and to add a 'x' to the correct box.
+-->
+    [ ] Fix
+    [ ] Refactor
+    [ ] Target update
+    [ ] Functionality change
+    [ ] Docs update
+    [ ] Test update
+    [ ] Breaking change
 
-
-## Related PRs
-List related PRs against other branches:
-
-branch | PR
------- | ------
-other_pr_production | [link]()
-other_pr_master | [link]()
-
-
-## Todos
-- [ ] Tests
-- [ ] Documentation
-
-
-## Deploy notes
-Notes regarding the deployment of this PR. These should note any
-required changes in the build environment, tools, compilers, etc.
-
-
-## Steps to test or reproduce
-Outline the steps to test or reproduce the PR here.

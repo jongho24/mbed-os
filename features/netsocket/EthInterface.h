@@ -23,12 +23,41 @@
 #include "netsocket/NetworkInterface.h"
 
 
-/** EthInterface class
- *
- *  Common interface that is shared between ethernet hardware.
+/** Common interface that is shared between Ethernet hardware.
  */
-class EthInterface : public NetworkInterface
-{
+class EthInterface : public virtual NetworkInterface {
+public:
+
+    /** @copydoc NetworkInterface::ethInterface
+     */
+    virtual EthInterface *ethInterface()
+    {
+        return this;
+    }
+
+    /** Get the default Ethernet interface.
+     *
+     * This is provided as a weak method so applications can override.
+     * Default behaviour is to get the target's default interface, if
+     * any.
+     *
+     * @return Pointer to interface, if one exists.
+     */
+    static EthInterface *get_default_instance();
+
+#if !defined(DOXYGEN_ONLY)
+protected:
+
+    /** Get the target's default Ethernet interface.
+     *
+     * This is provided as a weak method so targets can override. The
+     * default implementation will invoke EthernetInterface with the
+     * default EMAC and default network stack, if DEVICE_EMAC is set.
+     *
+     * @return Pointer to interface, if one exists.
+     */
+    static EthInterface *get_target_default_instance();
+#endif //!defined(DOXYGEN_ONLY)
 };
 
 

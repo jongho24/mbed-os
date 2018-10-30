@@ -177,12 +177,12 @@
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.{{u.id}}" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									{% for s in opts['as']['defines'] %}
-									<listOptionValue builtIn="false" value="{{s}}"/>
+									<listOptionValue builtIn="false" value="{{s|replace("\"", "\\\"")|escape}}"/>
 									{% endfor %}
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.files.{{u.id}}" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.files" useByScannerDiscovery="true" valueType="includeFiles">
 									{% for file in opts['common']['include_files'] %}
-									<listOptionValue builtIn="false" value="&quot;{{file}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/{{file}}&quot;"/>
 									{% endfor %}
 								</option>
 								{% if opts['as']['otherwarnings'] != '' %}
@@ -207,12 +207,12 @@
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.{{u.id}}" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									{% for s in opts['c']['defines'] %}
-									<listOptionValue builtIn="false" value="{{s}}"/>
+									<listOptionValue builtIn="false" value="{{s|replace("\"", "\\\"")|escape}}"/>
 									{% endfor %}
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.files.{{u.id}}" name="Include files (-include)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.files" useByScannerDiscovery="true" valueType="includeFiles">
 									{% for file in opts['common']['include_files'] %}
-									<listOptionValue builtIn="false" value="&quot;{{file}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/{{file}}&quot;"/>
 									{% endfor %}
 								</option>
 								{% if opts['c']['compiler.std'] %}
@@ -255,12 +255,12 @@
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.{{u.id}}" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									{% for s in opts['cpp']['defines'] %}
-									<listOptionValue builtIn="false" value="{{s}}"/>
+									<listOptionValue builtIn="false" value="{{s|replace("\"", "\\\"")|escape}}"/>
 									{% endfor %}
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.files.{{u.id}}" name="Include files (-include)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.files" useByScannerDiscovery="true" valueType="includeFiles">
 									{% for file in opts['common']['include_files'] %}
-									<listOptionValue builtIn="false" value="&quot;{{file}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/{{file}}&quot;"/>
 									{% endfor %}
 								</option>
 								{% if opts['cpp']['compiler.std'] %}
@@ -326,15 +326,18 @@
 									{% endfor %}
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.libs.{{u.id}}" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.libs" valueType="libs">
-									{% for lib in opts['ld']['user_libraries'] %}
+									{% for lib in opts['ld']['system_libraries'] %}
 									<listOptionValue builtIn="false" value="{{lib}}"/>
 									{% endfor %}
-									{% for lib in opts['ld']['system_libraries'] %}
+									{% for lib in opts['ld']['user_libraries'] %}
 									<listOptionValue builtIn="false" value="{{lib}}"/>
 									{% endfor %}
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.otherobjs.{{u.id}}" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.otherobjs" valueType="userObjs">
 									{% for path in opts['ld']['object_files'] %}
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/{{path}}&quot;"/>
+									{% endfor %}
+									{% for path in opts['ld']['user_library_files'] %}
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/{{path}}&quot;"/>
 									{% endfor %}
 								</option>

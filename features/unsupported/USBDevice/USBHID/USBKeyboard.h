@@ -22,11 +22,16 @@
 #include "USBHID.h"
 #include "Stream.h"
 
-/* Modifiers */
+/* Modifiers, left keys then right keys. */
 enum MODIFIER_KEY {
-    KEY_CTRL = 1,
-    KEY_SHIFT = 2,
-    KEY_ALT = 4,
+    KEY_CTRL = 0x01,
+    KEY_SHIFT = 0x02,
+    KEY_ALT = 0x04,
+    KEY_LOGO = 0x08,
+    KEY_RCTRL = 0x10,
+    KEY_RSHIFT = 0x20,
+    KEY_RALT = 0x40,
+    KEY_RLOGO = 0x80,
 };
 
 
@@ -143,7 +148,7 @@ public:
     *
     * @returns pointer to the report descriptor
     */
-    virtual uint8_t * reportDesc();
+    virtual const uint8_t * reportDesc();
 
     /*
     * Called when a data is received on the OUT endpoint. Useful to switch on LED of LOCK keys
@@ -168,7 +173,7 @@ protected:
     *
     * @returns pointer to the configuration descriptor
     */
-    virtual uint8_t * configurationDesc();
+    virtual const uint8_t * configurationDesc();
 
 private:
     //dummy otherwise it doesn,t compile (we must define all methods of an abstract class)
@@ -176,6 +181,7 @@ private:
         return -1;
     };
 
+    uint8_t configurationDescriptor[41];
     uint8_t lock_status;
 
 };

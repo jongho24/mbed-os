@@ -20,13 +20,13 @@ SEARCH_DIR(.)
 
 /*
 ram ORIGIN: 8_byte_aligned(49 vect * 4 bytes) =  8_byte_aligned(0xC4) = 0xC8
-ram LENGTH: 32KB - 0xC8 = 0x7F38
+ram LENGTH: 32KB (RAM size) - 0xC8 (NIVT) - 32 (topmost 32 bytes used by IAP functions) = 0x7F18
 */
 MEMORY
 {
   rom (rx)  : ORIGIN = 0x00000000, LENGTH = 512K
   
-  ram (rwx) : ORIGIN = 0x100000C8, LENGTH = 0x7F38
+  ram (rwx) : ORIGIN = 0x100000C8, LENGTH = 0x7F18
   
   ram1(rwx) : ORIGIN = 0x2007C000, LENGTH = 16K
   ram2(rwx) : ORIGIN = 0x20080000, LENGTH = 16K
@@ -76,15 +76,15 @@ SECTIONS
     *(.eh_frame_hdr)
     *(.eh_frame)
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     KEEP(*(.init))
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     __preinit_array_start = .;
     KEEP (*(.preinit_array))
     __preinit_array_end = .;
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     __init_array_start = .;
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array))
@@ -96,10 +96,10 @@ SECTIONS
     KEEP (*(SORT(.ctors.*)))
     KEEP (*crtend.o(.ctors))
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     KEEP(*(.fini))
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     __fini_array_start = .;
     KEEP (*(.fini_array))
     KEEP (*(SORT(.fini_array.*)))
@@ -110,7 +110,7 @@ SECTIONS
     KEEP (*(SORT(.dtors.*)))
     KEEP (*crtend.o(.dtors))
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     __cs3_regions = .;
     LONG (0)
     LONG (__cs3_region_init_ram)

@@ -15,8 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from os.path import split,splitext, basename
+from os import remove
 
-from tools.export.exporters import Exporter
+from tools.export.exporters import Exporter, deprecated_exporter
 
 class Folder:
     def __init__(self, name):
@@ -54,6 +55,7 @@ class Folder:
 
         return self.findChild(folderName)
 
+@deprecated_exporter
 class SimplicityV3(Exporter):
     NAME = 'SimplicityV3'
     TOOLCHAIN = 'GCC_ARM'
@@ -142,7 +144,7 @@ class SimplicityV3(Exporter):
                         main_files.append(source)
 
         libraries = []
-        for lib in self.resources.libraries:
+        for lib in self.libraries:
             l, _ = splitext(basename(lib))
             if l[3:] not in EXCLUDED_LIBS:
                 libraries.append(l[3:])
@@ -193,3 +195,7 @@ class SimplicityV3(Exporter):
         '''
 
         self.gen_file('simplicity/slsproj.tmpl', ctx, '%s.slsproj' % self.project_name)
+
+    @staticmethod
+    def clean(project_name):
+        remove('%s.slsproj' % project_name)

@@ -21,6 +21,8 @@ the GNU ARM Eclipse plug-ins.
 
 Author: Liviu Ionescu <ilg@livius.net>
 """
+from __future__ import print_function, absolute_import
+from builtins import str
 
 import os
 import copy
@@ -33,7 +35,7 @@ from os.path import splitext, basename, relpath, dirname, exists, join, dirname
 from random import randint
 from json import load
 
-from tools.export.exporters import Exporter, filter_supported
+from tools.export.exporters import Exporter, apply_supported_whitelist
 from tools.options import list_profiles
 from tools.targets import TARGET_MAP
 from tools.utils import NotSupportedException
@@ -61,87 +63,36 @@ u = UID()
 POST_BINARY_WHITELIST = set([
     "TEENSY3_1Code.binary_hook",
     "MCU_NRF51Code.binary_hook",
+    "LPCTargetCode.lpc_patch",
+    "LPC4088Code.binary_hook"
 ])
 
 class GNUARMEclipse(Exporter):
     NAME = 'GNU ARM Eclipse'
     TOOLCHAIN = 'GCC_ARM'
 
-    TARGETS = filter_supported("GCC_ARM", POST_BINARY_WHITELIST)
+    @classmethod
+    def is_target_supported(cls, target_name):
+        target = TARGET_MAP[target_name]
+        return apply_supported_whitelist(
+            cls.TOOLCHAIN, POST_BINARY_WHITELIST, target)
 
-    # override
-    @property
-    def flags(self):
-        """Returns a dictionary of toolchain flags.
-        Keys of the dictionary are:
-        cxx_flags    - c++ flags
-        c_flags      - c flags
-        ld_flags     - linker flags
-        asm_flags    - assembler flags
-        common_flags - common options
-
-        The difference from the parent function is that it does not
-        add macro definitions, since they are passed separately.
-        """
-
-        config_header = self.toolchain.get_config_header()
-        flags = {key + "_flags": copy.deepcopy(value) for key, value
-                 in self.toolchain.flags.iteritems()}
-        if config_header:
-            config_header = relpath(config_header,
-                                    self.resources.file_basepath[config_header])
-            flags['c_flags'] += self.toolchain.get_config_option(config_header)
-            flags['cxx_flags'] += self.toolchain.get_config_option(
-                config_header)
-        return flags
-
-    def toolchain_flags(self, toolchain):
-        """Returns a dictionary of toolchain flags.
-        Keys of the dictionary are:
-        cxx_flags    - c++ flags
-        c_flags      - c flags
-        ld_flags     - linker flags
-        asm_flags    - assembler flags
-        common_flags - common options
-
-        The difference from the above is that it takes a parameter.
-        """
-
-        # Note: use the config options from the currently selected toolchain.
-        config_header = self.toolchain.get_config_header()
-
-        flags = {key + "_flags": copy.deepcopy(value) for key, value
-                 in toolchain.flags.iteritems()}
-        if config_header:
-            config_header = relpath(config_header,
-                                    self.resources.file_basepath[config_header])
-            header_options = self.toolchain.get_config_option(config_header)
-            flags['c_flags'] += header_options
-            flags['cxx_flags'] += header_options
-        return flags
-
-    # override
-    def generate(self):
-        """
-        Generate the .project and .cproject files.
-        """
+    def validate_resources(self):
         if not self.resources.linker_script:
             raise NotSupportedException("No linker script found.")
 
-        print
-        print 'Create a GNU ARM Eclipse C++ managed project'
-        print 'Project name: {0}'.format(self.project_name)
-        print 'Target: {0}'.format(self.toolchain.target.name)
-        print 'Toolchain: {0}'.format(self.TOOLCHAIN)
+    def create_jinja_ctx(self):
+
+        self.validate_resources()
 
         self.resources.win_to_unix()
 
         # TODO: use some logger to display additional info if verbose
 
         libraries = []
-        # print 'libraries'
-        # print self.resources.libraries
-        for lib in self.resources.libraries:
+        library_files = []
+        for lib in self.libraries:
+            library_files.append(self.filter_dot(lib))
             l, _ = splitext(basename(lib))
             libraries.append(l[3:])
 
@@ -158,28 +109,22 @@ class GNUARMEclipse(Exporter):
         # TODO: get the list from existing .cproject
         build_folders = [s.capitalize() for s in profile_ids]
         build_folders.append('BUILD')
-        # print build_folders
 
         objects = [self.filter_dot(s) for s in self.resources.objects]
         for bf in build_folders:
             objects = [o for o in objects if not o.startswith(bf + '/')]
-        # print 'objects'
-        # print objects
 
         self.compute_exclusions()
 
         self.include_path = [
             self.filter_dot(s) for s in self.resources.inc_dirs]
-        print 'Include folders: {0}'.format(len(self.include_path))
 
         self.as_defines = self.toolchain.get_symbols(True)
         self.c_defines = self.toolchain.get_symbols()
         self.cpp_defines = self.c_defines
-        print 'Symbols: {0}'.format(len(self.c_defines))
 
         self.ld_script = self.filter_dot(
             self.resources.linker_script)
-        print 'Linker script: {0}'.format(self.ld_script)
 
         self.options = {}
         for id in profile_ids:
@@ -196,29 +141,22 @@ class GNUARMEclipse(Exporter):
             opts['id'] = id
             opts['name'] = opts['id'].capitalize()
 
-            print
-            print 'Build configuration: {0}'.format(opts['name'])
 
             profile = profiles[id]
-            profile_toolchain = profile[self.TOOLCHAIN]
 
             # A small hack, do not bother with src_path again,
             # pass an empty string to avoid crashing.
             src_paths = ['']
             target_name = self.toolchain.target.name
             toolchain = prepare_toolchain(
-                src_paths, target_name, self.TOOLCHAIN, build_profile=profile_toolchain)
+                src_paths, "", target_name, self.TOOLCHAIN, build_profile=[profile])
 
             # Hack to fill in build_dir
             toolchain.build_dir = self.toolchain.build_dir
+            toolchain.config = self.toolchain.config
+            toolchain.set_config_data(self.toolchain.config.get_config_data())
 
             flags = self.toolchain_flags(toolchain)
-
-            print 'Common flags:', ' '.join(flags['common_flags'])
-            print 'C++ flags:', ' '.join(flags['cxx_flags'])
-            print 'C flags:', ' '.join(flags['c_flags'])
-            print 'ASM flags:', ' '.join(flags['asm_flags'])
-            print 'Linker flags:', ' '.join(flags['ld_flags'])
 
             # Most GNU ARM Eclipse options have a parent,
             # either debug or release.
@@ -242,8 +180,11 @@ class GNUARMEclipse(Exporter):
 
             opts['ld']['object_files'] = objects
             opts['ld']['user_libraries'] = libraries
+            opts['ld']['user_library_files'] = library_files
             opts['ld']['system_libraries'] = self.system_libraries
-            opts['ld']['script'] = self.ld_script
+            opts['ld']['script'] = join(id.capitalize(),
+                                        "linker-script-%s.ld" % id)
+            opts['cpp_cmd'] = '"{}"'.format(toolchain.preproc[0]) + " " + " ".join(toolchain.preproc[1:])
 
             # Unique IDs used in multiple places.
             # Those used only once are implemented with {{u.id}}.
@@ -260,6 +201,7 @@ class GNUARMEclipse(Exporter):
 
         jinja_ctx = {
             'name': self.project_name,
+            'ld_script': self.ld_script,
 
             # Compiler & linker command line options
             'options': self.options,
@@ -268,26 +210,37 @@ class GNUARMEclipse(Exporter):
             # will be called repeatedly, to generate multiple UIDs.
             'u': u,
         }
+        return jinja_ctx
 
-        # TODO: it would be good to have jinja stop if one of the
-        # expected context values is not defined.
+    # override
+    def generate(self):
+        """
+        Generate the .project and .cproject files.
+        """
+        jinja_ctx = self.create_jinja_ctx()
+
+
         self.gen_file('gnuarmeclipse/.project.tmpl', jinja_ctx,
                       '.project', trim_blocks=True, lstrip_blocks=True)
         self.gen_file('gnuarmeclipse/.cproject.tmpl', jinja_ctx,
                       '.cproject', trim_blocks=True, lstrip_blocks=True)
         self.gen_file('gnuarmeclipse/makefile.targets.tmpl', jinja_ctx,
                       'makefile.targets', trim_blocks=True, lstrip_blocks=True)
+        self.gen_file_nonoverwrite('gnuarmeclipse/mbedignore.tmpl', jinja_ctx,
+                                   '.mbedignore')
 
-        if not exists('.mbedignore'):
-            print
-            print 'Create .mbedignore'
-            with open('.mbedignore', 'w') as f:
-                for bf in build_folders:
-                    print bf + '/'
-                    f.write(bf + '/\n')
+        print('Done. Import the \'{0}\' project in Eclipse.'.format(self.project_name))
 
-        print
-        print 'Done. Import the \'{0}\' project in Eclipse.'.format(self.project_name)
+    @staticmethod
+    def clean(_):
+        os.remove('.project')
+        os.remove('.cproject')
+        if exists('Debug'):
+            shutil.rmtree('Debug')
+        if exists('Release'):
+            shutil.rmtree('Release')
+        if exists('makefile.targets'):
+            os.remove('makefile.targets')
 
     # override
     @staticmethod
@@ -342,7 +295,7 @@ class GNUARMEclipse(Exporter):
         if ret_code != 0:
             ret_string += "FAILURE\n"
 
-        print "%s\n%s\n%s\n%s" % (stdout_string, out, err_string, ret_string)
+        print("%s\n%s\n%s\n%s" % (stdout_string, out, err_string, ret_string))
 
         if log_name:
             # Write the output to the log file
@@ -356,14 +309,6 @@ class GNUARMEclipse(Exporter):
         if cleanup:
             if exists(log_name):
                 os.remove(log_name)
-            os.remove('.project')
-            os.remove('.cproject')
-            if exists('Debug'):
-                shutil.rmtree('Debug')
-            if exists('Release'):
-                shutil.rmtree('Release')
-            if exists('makefile.targets'):
-                os.remove('makefile.targets')
 
         # Always remove the temporary folder.
         if exists(tmp_folder):
@@ -384,11 +329,9 @@ class GNUARMEclipse(Exporter):
         file_names = [join(tools_path, "profiles", fn) for fn in os.listdir(
             join(tools_path, "profiles")) if fn.endswith(".json")]
 
-        # print file_names
 
         profile_names = [basename(fn).replace(".json", "")
                          for fn in file_names]
-        # print profile_names
 
         profiles = {}
 
@@ -418,122 +361,8 @@ class GNUARMEclipse(Exporter):
         - recurse the tree and collect all unused folders; descend
         the hierarchy only for used nodes
         """
-        source_folders = [self.filter_dot(s) for s in set(dirname(
-            src) for src in self.resources.c_sources + self.resources.cpp_sources + self.resources.s_sources)]
-        if '.' in source_folders:
-            source_folders.remove('.')
+        self.excluded_folders = set(self.resources.ignored_dirs) - set(self.resources.inc_dirs)
 
-        # print 'source folders'
-        # print source_folders
-
-        # Source folders were converted before and are guaranteed to
-        # use the POSIX separator.
-        top_folders = [f for f in set(s.split('/')[0]
-                                      for s in source_folders)]
-        # print 'top folders'
-        # print top_folders
-
-        self.source_tree = {}
-        for top_folder in top_folders:
-            for root, dirs, files in os.walk(top_folder, topdown=True):
-                # print root, dirs, files
-
-                # Paths returned by os.walk() must be split with os.dep
-                # to accomodate Windows weirdness.
-                parts = root.split(os.sep)
-
-                # Ignore paths that include parts starting with dot.
-                skip = False
-                for part in parts:
-                    if part.startswith('.'):
-                        skip = True
-                        break
-                if skip:
-                    continue
-
-                # Further process only leaf paths, (that do not have
-                # sub-folders).
-                if len(dirs) == 0:
-                    # The path is reconstructed using POSIX separators.
-                    self.add_source_folder_to_tree('/'.join(parts))
-
-        for folder in source_folders:
-            self.add_source_folder_to_tree(folder, True)
-
-        # print
-        # print self.source_tree
-        # self.dump_paths(self.source_tree)
-        # self.dump_tree(self.source_tree)
-
-        # print 'excludings'
-        self.excluded_folders = ['BUILD']
-        self.recurse_excludings(self.source_tree)
-
-        print 'Source folders: {0}, with {1} exclusions'.format(len(source_folders), len(self.excluded_folders))
-
-    def add_source_folder_to_tree(self, path, is_used=False):
-        """
-        Decompose a path in an array of folder names and create the tree.
-        On the second pass the nodes should be already there; mark them
-        as used.
-        """
-        # print path, is_used
-
-        # All paths arriving here are guaranteed to use the POSIX
-        # separators, os.walk() paths were also explicitly converted.
-        parts = path.split('/')
-        # print parts
-        node = self.source_tree
-        prev = None
-        for part in parts:
-            if part not in node.keys():
-                new_node = {}
-                new_node['name'] = part
-                new_node['children'] = {}
-                if prev != None:
-                    new_node['parent'] = prev
-                node[part] = new_node
-            node[part]['is_used'] = is_used
-            prev = node[part]
-            node = node[part]['children']
-
-    def recurse_excludings(self, nodes):
-        """
-        Recurse the tree and collect all unused folders; descend
-        the hierarchy only for used nodes.
-        """
-        for k in nodes.keys():
-            node = nodes[k]
-            if node['is_used'] == False:
-                parts = []
-                cnode = node
-                while True:
-                    parts.insert(0, cnode['name'])
-                    if 'parent' not in cnode:
-                        break
-                    cnode = cnode['parent']
-
-                # Compose a POSIX path.
-                path = '/'.join(parts)
-                # print path
-                self.excluded_folders.append(path)
-            else:
-                self.recurse_excludings(node['children'])
-
-    # -------------------------------------------------------------------------
-
-    @staticmethod
-    def filter_dot(str):
-        """
-        Remove the './' prefix, if present.
-        This function assumes that resources.win_to_unix()
-        replaced all windows backslashes with slashes.
-        """
-        if str == None:
-            return None
-        if str[:2] == './':
-            return str[2:]
-        return str
 
     # -------------------------------------------------------------------------
 
@@ -542,7 +371,6 @@ class GNUARMEclipse(Exporter):
             node = nodes[k]
             parent_name = node['parent'][
                 'name'] if 'parent' in node.keys() else ''
-            print '  ' * depth, node['name'], node['is_used'], parent_name
             if len(node['children'].keys()) != 0:
                 self.dump_tree(node['children'], depth + 1)
 
@@ -556,7 +384,6 @@ class GNUARMEclipse(Exporter):
                     break
                 node = node['parent']
             path = '/'.join(parts)
-            print path, nodes[k]['is_used']
             self.dump_paths(nodes[k]['children'], depth + 1)
 
     # -------------------------------------------------------------------------
@@ -585,14 +412,6 @@ class GNUARMEclipse(Exporter):
 
         # Make a copy of the flags, to be one by one removed after processing.
         flags = copy.deepcopy(flags_in)
-
-        if False:
-            print
-            print 'common_flags', flags['common_flags']
-            print 'asm_flags', flags['asm_flags']
-            print 'c_flags', flags['c_flags']
-            print 'cxx_flags', flags['cxx_flags']
-            print 'ld_flags', flags['ld_flags']
 
         # Initialise the 'last resort' options where all unrecognised
         # options will be collected.
@@ -1025,17 +844,6 @@ class GNUARMEclipse(Exporter):
         opts['c']['other'] = opts['c']['other'].strip()
         opts['cpp']['other'] = opts['cpp']['other'].strip()
         opts['ld']['other'] = opts['ld']['other'].strip()
-
-        if False:
-            print
-            print opts
-
-            print
-            print 'common_flags', flags['common_flags']
-            print 'asm_flags', flags['asm_flags']
-            print 'c_flags', flags['c_flags']
-            print 'cxx_flags', flags['cxx_flags']
-            print 'ld_flags', flags['ld_flags']
 
     @staticmethod
     def find_options(lst, option):

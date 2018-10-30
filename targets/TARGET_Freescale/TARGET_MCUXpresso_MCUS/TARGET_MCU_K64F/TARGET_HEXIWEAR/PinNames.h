@@ -201,6 +201,11 @@ typedef enum {
     LED3 = LED_BLUE,
     LED4 = LED_RED,
 
+    // Standardized button names
+    BUTTON1 = PTA12,
+    BUTTON2 = PTA13,
+    BUTTON3 = PTA15,
+
     // USB Pins
     USBTX = PTB17,
     USBRX = PTB16,
@@ -209,6 +214,11 @@ typedef enum {
     I2C_SDA = PTC11,
 
     DAC0_OUT = 0xFEFE, /* DAC does not have Pin Name in RM */
+
+    SPI_MOSI   = PTE3,
+    SPI_MISO   = PTE1,
+    SPI_SCK    = PTE2,
+    SPI_CS     = PTE4,
 
     // Not connected
     NC = (int)0xFFFFFFFF

@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32l0xx_hal_conf.h
   * @author  MCD Application Team
-  * @version V1.7.0
-  * @date    31-May-2016
   * @brief   HAL configuration file.
   ******************************************************************************
   * @attention
@@ -146,10 +144,12 @@
   #define LSE_VALUE    ((uint32_t)32768U) /*!< Value of the External oscillator in Hz*/
 #endif /* LSE_VALUE */
 
-
+/**
+  * @brief Time out for LSE start up value in ms.
+  */
 #if !defined  (LSE_STARTUP_TIMEOUT)
   #define LSE_STARTUP_TIMEOUT    ((uint32_t)5000U)   /*!< Time out for LSE start up, in ms */
-#endif /* HSE_STARTUP_TIMEOUT */
+#endif /* LSE_STARTUP_TIMEOUT */
 
 
 /* Tip: To avoid modifying this file each time you need to use different HSE,
@@ -296,16 +296,8 @@
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT
-/**
-  * @brief  The assert_param macro is used for function's parameters check.
-  * @param  expr: If expr is false, it calls assert_failed function
-  *         which reports the name of the source file and the source
-  *         line number of the call that failed.
-  *         If expr is true, it returns no value.
-  * @retval None
-  */
-  #include "mbed_assert.h"
-  #define assert_param(expr) MBED_ASSERT(expr)
+/* ALL MBED targets use same stm32_assert.h */
+#include "stm32_assert.h"
 #else
   #define assert_param(expr) ((void)0U)
 #endif /* USE_FULL_ASSERT */

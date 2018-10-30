@@ -50,10 +50,6 @@
 */
 #define __ram_vector_table__            1
 
-/* Heap 1/4 of ram and stack 1/8 */
-#define __stack_size__       0x8000
-#define __heap_size__        0x10000
-
 #if (defined(__ram_vector_table__))
   #define __ram_vector_table_size__    0x00000400
 #else
@@ -66,6 +62,10 @@
 
 #if !defined(MBED_APP_SIZE)
   #define MBED_APP_SIZE 0x100000
+#endif
+
+#if !defined(MBED_BOOT_STACK_SIZE)
+  #define MBED_BOOT_STACK_SIZE 0x400
 #endif
 
 #define m_interrupts_start             MBED_APP_START
@@ -90,7 +90,7 @@
 #if (defined(__stack_size__))
   #define Stack_Size                   __stack_size__
 #else
-  #define Stack_Size                   0x0400
+  #define Stack_Size                   MBED_BOOT_STACK_SIZE
 #endif
 
 #if (defined(__heap_size__))
@@ -99,14 +99,14 @@
   #define Heap_Size                    0x0400
 #endif
 
-LR_m_text m_interrupts_start m_text_start+m_text_size-m_interrupts_start {   ; load region size_region
+LR_IROM1 m_interrupts_start m_text_start+m_text_size-m_interrupts_start {   ; load region size_region
   VECTOR_ROM m_interrupts_start m_interrupts_size { ; load address = execution address
     * (RESET,+FIRST)
   }
   ER_m_flash_config m_flash_config_start FIXED m_flash_config_size { ; load address = execution address
     * (FlashConfig)
   }
-  ER_m_text m_text_start m_text_size { ; load address = execution address
+  ER_IROM1 m_text_start m_text_size { ; load address = execution address
     * (InRoot$$Sections)
     .ANY (+RO)
   }
@@ -125,5 +125,7 @@ LR_m_text m_interrupts_start m_text_start+m_text_size-m_interrupts_start {   ; l
     .ANY (+RW +ZI)
   }
   RW_IRAM1 ImageLimit(RW_m_data_2) { ; Heap region growing up
+  }
+  ARM_LIB_STACK m_data_2_start+m_data_2_size EMPTY -Stack_Size { ; Stack region growing down
   }
 }

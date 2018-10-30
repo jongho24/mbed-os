@@ -1,5 +1,5 @@
 /* mbed Microcontroller Library
- * Copyright (c) 2016 ARM Limited
+ * Copyright (c) 2016-2018 ARM Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,15 @@
 #ifndef INITIAL_SP
 #define INITIAL_SP              (0x20020000UL)
 #endif
-#ifndef OS_TASKCNT
-#define OS_TASKCNT              6
-#endif
-#ifndef OS_MAINSTKSIZE
-#define OS_MAINSTKSIZE          112
-#endif
-#ifndef OS_CLOCK
-#define OS_CLOCK                24000000
+
+#elif defined(TARGET_CM3DS_MPS2)
+
+#include "memory_zones.h"
+
+#ifndef INITIAL_SP
+#define INITIAL_SP              (ZBT_SSRAM23_START + ZBT_SSRAM23_SIZE)
 #endif
 
-#endif
+#endif /* defined(TARGET_...) */
 
-#endif  // MBED_MBED_RTX_H
+#endif  /* MBED_MBED_RTX_H */

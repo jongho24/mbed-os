@@ -4,7 +4,7 @@
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x00002000, LENGTH = 504K
-  RAM (rwx) : ORIGIN = 0x100000C8, LENGTH = (32K - 0xC8)
+  RAM (rwx) : ORIGIN = 0x100000C8, LENGTH = (32K - 0xC8 - 32)  /* topmost 32 bytes used by IAP functions */
 
   USB_RAM(rwx) : ORIGIN = 0x2007C000, LENGTH = 16K
   ETH_RAM(rwx) : ORIGIN = 0x20080000, LENGTH = 16K
@@ -88,13 +88,13 @@ SECTIONS
         *(vtable)
         *(.data*)
 
-        . = ALIGN(4);
+        . = ALIGN(8);
         /* preinit data */
         PROVIDE (__preinit_array_start = .);
         KEEP(*(.preinit_array))
         PROVIDE (__preinit_array_end = .);
 
-        . = ALIGN(4);
+        . = ALIGN(8);
         /* init data */
         PROVIDE (__init_array_start = .);
         KEEP(*(SORT(.init_array.*)))
@@ -102,14 +102,14 @@ SECTIONS
         PROVIDE (__init_array_end = .);
 
 
-        . = ALIGN(4);
+        . = ALIGN(8);
         /* finit data */
         PROVIDE (__fini_array_start = .);
         KEEP(*(SORT(.fini_array.*)))
         KEEP(*(.fini_array))
         PROVIDE (__fini_array_end = .);
 
-        . = ALIGN(4);
+        . = ALIGN(8);
         /* All data end */
         __data_end__ = .;
 

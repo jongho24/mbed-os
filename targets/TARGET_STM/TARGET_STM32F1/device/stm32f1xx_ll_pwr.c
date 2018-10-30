@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f1xx_ll_pwr.c
   * @author  MCD Application Team
-  * @version $VERSION$
-  * @date    $DATE$
   * @brief   PWR LL module driver.
   ******************************************************************************
   * @attention

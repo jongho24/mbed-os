@@ -27,20 +27,21 @@
 #
 
 # Set the mbed TLS release to import (this can/should be edited before import)
-MBED_TLS_RELEASE ?= mbedtls-2.4.2
+MBED_TLS_RELEASE ?= mbedtls-2.13.1
 
 # Translate between mbed TLS namespace and mbed namespace
 TARGET_PREFIX:=../
 TARGET_SRC:=$(TARGET_PREFIX)src
 TARGET_INC:=$(TARGET_PREFIX)inc
+TARGET_TESTS:=$(TARGET_PREFIX)TESTS
 
 # mbed TLS source directory - hidden from mbed via TARGET_IGNORE
-MBED_TLS_URL:=https://github.com/ARMmbed/mbedtls-restricted.git
+MBED_TLS_URL:=git@github.com:ARMmbed/mbedtls-restricted.git
 MBED_TLS_DIR:=TARGET_IGNORE/mbedtls
 MBED_TLS_API:=$(MBED_TLS_DIR)/include/mbedtls
 MBED_TLS_GIT_CFG=$(MBED_TLS_DIR)/.git/config
 
-.PHONY: all deploy rsync mbedtls clean update
+.PHONY: all deploy deploy-tests rsync mbedtls clean update
 
 all: mbedtls
 
@@ -67,8 +68,18 @@ deploy: rsync
 	# Adjusting the default mbed TLS config file to mbed purposes
 	./adjust-config.sh $(MBED_TLS_DIR)/scripts/config.pl $(TARGET_INC)/mbedtls/config.h
 	#
-	# Copy the trimmed config that does not require entropy source
+	# Copy and adjust the trimmed config that does not require entropy source
 	cp $(MBED_TLS_DIR)/configs/config-no-entropy.h $(TARGET_INC)/mbedtls/.
+	./adjust-no-entropy-config.sh $(MBED_TLS_DIR)/scripts/config.pl $(TARGET_INC)/mbedtls/config-no-entropy.h
+
+deploy-tests: deploy
+	#
+	# Copying mbed TLS tests...
+	rm -rf $(TARGET_TESTS)
+	mkdir -p $(TARGET_TESTS)
+	rsync -a --delete $(MBED_TLS_DIR)/tests/TESTS/ $(TARGET_TESTS)
+	mkdir -p $(TARGET_TESTS)/host_tests
+	cp $(MBED_TLS_DIR)/tests/scripts/mbedtls_test.py $(TARGET_TESTS)/host_tests/
 
 update: $(MBED_TLS_GIT_CFG)  $(MBED_TLS_HA_GIT_CFG)
 	#
